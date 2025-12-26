@@ -11,6 +11,7 @@ import Dashboard from "./pages/Dashboard";
 import Wizard from "./pages/Wizard";
 import Results from "./pages/Results";
 import Ideas from "./pages/Ideas";
+import Documents from "./pages/Documents";
 import Pricing from "./pages/Pricing";
 import NotFound from "./pages/NotFound";
 
@@ -30,6 +31,7 @@ const App = () => (
               <Route path="/pricing" element={<Pricing />} />
               <Route path="/app/dashboard" element={<Dashboard />} />
               <Route path="/app/ideas" element={<Ideas />} />
+              <Route path="/app/documents" element={<Documents />} />
               <Route path="/wizard" element={<Wizard />} />
               <Route path="/results" element={<Results />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
