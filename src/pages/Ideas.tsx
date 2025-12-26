@@ -7,8 +7,9 @@ import { IdeaCard } from "@/components/ideas/IdeaCard";
 import { IdeasToolbar } from "@/components/ideas/IdeasToolbar";
 import { IdeaDetailsPanel } from "@/components/ideas/IdeaDetailsPanel";
 import { CompareModal } from "@/components/ideas/CompareModal";
+import { AppHeader } from "@/components/layout/AppHeader";
 import { BusinessIdea, ViewMode } from "@/types/idea";
-import { Sparkles, Plus, ArrowLeft, Lightbulb } from "lucide-react";
+import { Sparkles, Plus, Lightbulb } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const Ideas = () => {
@@ -93,25 +94,20 @@ const Ideas = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b border-border">
+      <AppHeader />
+
+      {/* Sub-header with page info */}
+      <div className="border-b border-border bg-card/50">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-4">
-              <Button variant="ghost" size="icon" asChild>
-                <Link to="/app/dashboard">
-                  <ArrowLeft className="w-5 h-5" />
-                </Link>
-              </Button>
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-gradient-warm flex items-center justify-center">
-                  <Lightbulb className="w-4 h-4 text-white" />
-                </div>
-                <span className="font-display font-bold text-lg text-foreground">
-                  My Ideas
-                </span>
-                <span className="text-muted-foreground">({ideas.length})</span>
+          <div className="flex items-center justify-between h-14">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-gradient-warm flex items-center justify-center">
+                <Lightbulb className="w-4 h-4 text-white" />
               </div>
+              <span className="font-display font-bold text-lg text-foreground">
+                My Ideas
+              </span>
+              <span className="text-muted-foreground">({ideas.length})</span>
             </div>
 
             <Button asChild className="btn-gradient gap-2">
@@ -123,7 +119,7 @@ const Ideas = () => {
             </Button>
           </div>
         </div>
-      </header>
+      </div>
 
       <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {ideas.length === 0 && !filters.search && !filters.industry ? (

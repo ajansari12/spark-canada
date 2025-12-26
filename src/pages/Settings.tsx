@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { AppHeader } from "@/components/layout/AppHeader";
 import {
   Select,
   SelectContent,
@@ -16,14 +17,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  ArrowLeft,
   Settings as SettingsIcon,
   User,
   CreditCard,
-  Sparkles,
   Crown,
   Loader2,
   Check,
+  Sparkles,
 } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -163,28 +163,23 @@ const Settings = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b border-border">
+      <AppHeader />
+
+      {/* Sub-header with page info */}
+      <div className="border-b border-border bg-card/50">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-4">
-              <Button variant="ghost" size="icon" asChild>
-                <Link to="/app/dashboard">
-                  <ArrowLeft className="w-5 h-5" />
-                </Link>
-              </Button>
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-gradient-warm flex items-center justify-center">
-                  <SettingsIcon className="w-4 h-4 text-white" />
-                </div>
-                <span className="font-display font-bold text-lg text-foreground">
-                  Settings
-                </span>
+          <div className="flex items-center h-14">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-gradient-warm flex items-center justify-center">
+                <SettingsIcon className="w-4 h-4 text-white" />
               </div>
+              <span className="font-display font-bold text-lg text-foreground">
+                Settings
+              </span>
             </div>
           </div>
         </div>
-      </header>
+      </div>
 
       <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 max-w-3xl">
         <div className="space-y-6">

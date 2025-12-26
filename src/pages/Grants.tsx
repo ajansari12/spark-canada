@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { AppHeader } from "@/components/layout/AppHeader";
 import { ExternalLink, Search, DollarSign, MapPin, Building2, Filter } from "lucide-react";
 
 const PROVINCES = [
@@ -123,8 +124,10 @@ export default function Grants() {
 
   return (
     <div className="min-h-screen bg-background">
+      <AppHeader />
+      
       <div className="container mx-auto px-4 py-8 max-w-7xl">
-        {/* Header */}
+        {/* Page Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-foreground mb-2">Canadian Business Grants & Funding</h1>
           <p className="text-muted-foreground">

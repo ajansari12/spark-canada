@@ -1,6 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { AppHeader } from "@/components/layout/AppHeader";
 import { TrendingUp, TrendingDown, Minus, MapPin, Calendar, Lightbulb, BarChart3 } from "lucide-react";
 import { useState } from "react";
 import {
@@ -126,8 +127,10 @@ export default function Trends() {
 
   return (
     <div className="min-h-screen bg-background">
+      <AppHeader />
+      
       <div className="container mx-auto px-4 py-8 max-w-7xl">
-        {/* Header */}
+        {/* Page Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
           <div>
             <h1 className="text-3xl font-bold text-foreground mb-2">Market Trends Dashboard</h1>
