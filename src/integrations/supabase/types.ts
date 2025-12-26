@@ -14,6 +14,83 @@ export type Database = {
   }
   public: {
     Tables: {
+      ideas: {
+        Row: {
+          competitors: Json | null
+          created_at: string
+          description: string
+          grants: Json | null
+          id: string
+          industry: string | null
+          is_saved: boolean
+          market_fit_score: number | null
+          monthly_revenue_max: number | null
+          monthly_revenue_min: number | null
+          name: string
+          province: string | null
+          quick_wins: Json | null
+          session_id: string | null
+          skills_match_score: number | null
+          startup_cost_max: number | null
+          startup_cost_min: number | null
+          updated_at: string
+          user_id: string
+          viability_score: number | null
+        }
+        Insert: {
+          competitors?: Json | null
+          created_at?: string
+          description: string
+          grants?: Json | null
+          id?: string
+          industry?: string | null
+          is_saved?: boolean
+          market_fit_score?: number | null
+          monthly_revenue_max?: number | null
+          monthly_revenue_min?: number | null
+          name: string
+          province?: string | null
+          quick_wins?: Json | null
+          session_id?: string | null
+          skills_match_score?: number | null
+          startup_cost_max?: number | null
+          startup_cost_min?: number | null
+          updated_at?: string
+          user_id: string
+          viability_score?: number | null
+        }
+        Update: {
+          competitors?: Json | null
+          created_at?: string
+          description?: string
+          grants?: Json | null
+          id?: string
+          industry?: string | null
+          is_saved?: boolean
+          market_fit_score?: number | null
+          monthly_revenue_max?: number | null
+          monthly_revenue_min?: number | null
+          name?: string
+          province?: string | null
+          quick_wins?: Json | null
+          session_id?: string | null
+          skills_match_score?: number | null
+          startup_cost_max?: number | null
+          startup_cost_min?: number | null
+          updated_at?: string
+          user_id?: string
+          viability_score?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ideas_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -44,6 +121,39 @@ export type Database = {
           id?: string
           province?: string | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      sessions: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          current_step: number
+          id: string
+          status: string
+          updated_at: string
+          user_id: string | null
+          wizard_data: Json
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          current_step?: number
+          id?: string
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+          wizard_data?: Json
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          current_step?: number
+          id?: string
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+          wizard_data?: Json
         }
         Relationships: []
       }
