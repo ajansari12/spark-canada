@@ -146,7 +146,7 @@ const PricingPreview = () => {
                 size="lg"
                 asChild
               >
-                <Link to={plan.name === "Enterprise" ? "/contact" : "/wizard"}>
+                <Link to="/pricing">
                   {plan.cta}
                 </Link>
               </Button>
