@@ -12,7 +12,11 @@ import Wizard from "./pages/Wizard";
 import Results from "./pages/Results";
 import Ideas from "./pages/Ideas";
 import Documents from "./pages/Documents";
+import Settings from "./pages/Settings";
 import Pricing from "./pages/Pricing";
+import Terms from "./pages/legal/Terms";
+import Privacy from "./pages/legal/Privacy";
+import Disclaimer from "./pages/legal/Disclaimer";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -32,8 +36,12 @@ const App = () => (
               <Route path="/app/dashboard" element={<Dashboard />} />
               <Route path="/app/ideas" element={<Ideas />} />
               <Route path="/app/documents" element={<Documents />} />
+              <Route path="/app/settings" element={<Settings />} />
               <Route path="/wizard" element={<Wizard />} />
               <Route path="/results" element={<Results />} />
+              <Route path="/legal/terms" element={<Terms />} />
+              <Route path="/legal/privacy" element={<Privacy />} />
+              <Route path="/legal/disclaimer" element={<Disclaimer />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>

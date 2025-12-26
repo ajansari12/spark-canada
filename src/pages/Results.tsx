@@ -1,9 +1,12 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { useSubscription } from "@/hooks/useSubscription";
+import { useUsageLimits } from "@/hooks/useUsageLimits";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { UpgradeModal } from "@/components/subscription/UpgradeModal";
 import { 
   Sparkles, 
   ArrowLeft, 
@@ -40,6 +43,8 @@ interface BusinessIdea {
 
 const Results = () => {
   const { user, loading: authLoading } = useAuth();
+  const { tier, subscribed } = useSubscription();
+  const { usage, incrementUsage, FREE_GENERATION_LIMIT } = useUsageLimits();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { toast } = useToast();
@@ -51,6 +56,8 @@ const Results = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [selectedIdea, setSelectedIdea] = useState<BusinessIdea | null>(null);
   const [savingIds, setSavingIds] = useState<Set<string>>(new Set());
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [hasGenerated, setHasGenerated] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -58,13 +65,20 @@ const Results = () => {
       return;
     }
 
-    if (user && sessionId) {
+    if (user && sessionId && !hasGenerated) {
       generateIdeas();
     }
   }, [user, authLoading, sessionId]);
 
   const generateIdeas = async () => {
     if (!sessionId || !user) return;
+
+    // Check if user can generate (unless they're subscribed)
+    if (!subscribed && !usage.canGenerate) {
+      setShowUpgradeModal(true);
+      setIsLoading(false);
+      return;
+    }
 
     setIsLoading(true);
     setIsGenerating(true);
@@ -96,10 +110,16 @@ const Results = () => {
       }
 
       setIdeas(data.ideas || []);
+      setHasGenerated(true);
+
+      // Increment usage count for free users
+      if (!subscribed) {
+        await incrementUsage();
+      }
       
       toast({
         title: "Ideas Generated!",
-        description: `We found ${data.ideas?.length || 0} business ideas for you.`,
+        description: `We found ${data.ideas?.length || 0} business ideas for you.${!subscribed ? ` (${usage.remaining - 1} generations left this month)` : ""}`,
       });
 
     } catch (error) {
@@ -113,6 +133,15 @@ const Results = () => {
       setIsLoading(false);
       setIsGenerating(false);
     }
+  };
+
+  const handleRegenerate = () => {
+    if (!subscribed && !usage.canGenerate) {
+      setShowUpgradeModal(true);
+      return;
+    }
+    setHasGenerated(false);
+    generateIdeas();
   };
 
   const saveIdea = async (idea: BusinessIdea, index: number) => {
@@ -238,15 +267,22 @@ const Results = () => {
               </div>
             </div>
 
-            <Button
-              variant="outline"
-              onClick={generateIdeas}
-              disabled={isGenerating}
-              className="gap-2"
-            >
-              <RefreshCw className={cn("w-4 h-4", isGenerating && "animate-spin")} />
-              Regenerate
-            </Button>
+            <div className="flex items-center gap-3">
+              {!subscribed && (
+                <span className="text-sm text-muted-foreground hidden sm:inline">
+                  {usage.remaining} generations left
+                </span>
+              )}
+              <Button
+                variant="outline"
+                onClick={handleRegenerate}
+                disabled={isGenerating}
+                className="gap-2"
+              >
+                <RefreshCw className={cn("w-4 h-4", isGenerating && "animate-spin")} />
+                Regenerate
+              </Button>
+            </div>
           </div>
         </div>
       </header>
@@ -464,6 +500,12 @@ const Results = () => {
           </Button>
         </div>
       </main>
+
+      <UpgradeModal
+        isOpen={showUpgradeModal}
+        onClose={() => setShowUpgradeModal(false)}
+        feature="Idea Generation"
+      />
     </div>
   );
 };
