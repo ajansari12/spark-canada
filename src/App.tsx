@@ -12,6 +12,8 @@ import Wizard from "./pages/Wizard";
 import Results from "./pages/Results";
 import Ideas from "./pages/Ideas";
 import Documents from "./pages/Documents";
+import Grants from "./pages/Grants";
+import Trends from "./pages/Trends";
 import Settings from "./pages/Settings";
 import Pricing from "./pages/Pricing";
 import Terms from "./pages/legal/Terms";
@@ -36,6 +38,8 @@ const App = () => (
               <Route path="/app/dashboard" element={<Dashboard />} />
               <Route path="/app/ideas" element={<Ideas />} />
               <Route path="/app/documents" element={<Documents />} />
+              <Route path="/app/grants" element={<Grants />} />
+              <Route path="/app/trends" element={<Trends />} />
               <Route path="/app/settings" element={<Settings />} />
               <Route path="/wizard" element={<Wizard />} />
               <Route path="/results" element={<Results />} />

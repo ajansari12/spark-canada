@@ -58,6 +58,57 @@ export type Database = {
           },
         ]
       }
+      grants: {
+        Row: {
+          created_at: string
+          deadline: string | null
+          description: string
+          eligibility: string | null
+          funding_max: number | null
+          funding_min: number | null
+          grant_type: string
+          id: string
+          industries: string[] | null
+          is_active: boolean
+          name: string
+          province: string | null
+          updated_at: string
+          url: string
+        }
+        Insert: {
+          created_at?: string
+          deadline?: string | null
+          description: string
+          eligibility?: string | null
+          funding_max?: number | null
+          funding_min?: number | null
+          grant_type?: string
+          id?: string
+          industries?: string[] | null
+          is_active?: boolean
+          name: string
+          province?: string | null
+          updated_at?: string
+          url: string
+        }
+        Update: {
+          created_at?: string
+          deadline?: string | null
+          description?: string
+          eligibility?: string | null
+          funding_max?: number | null
+          funding_min?: number | null
+          grant_type?: string
+          id?: string
+          industries?: string[] | null
+          is_active?: boolean
+          name?: string
+          province?: string | null
+          updated_at?: string
+          url?: string
+        }
+        Relationships: []
+      }
       ideas: {
         Row: {
           competitors: Json | null
