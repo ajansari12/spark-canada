@@ -1,21 +1,26 @@
 import { useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { useDashboardStats } from "@/hooks/useDashboardStats";
 import { Button } from "@/components/ui/button";
-import { 
-  Sparkles, 
-  LogOut, 
-  Lightbulb, 
-  FileText, 
-  TrendingUp, 
+import { StatsCards } from "@/components/dashboard/StatsCards";
+import { RecentIdeasCarousel } from "@/components/dashboard/RecentIdeasCarousel";
+import { ActivityFeed } from "@/components/dashboard/ActivityFeed";
+import {
+  Sparkles,
+  LogOut,
+  Lightbulb,
+  FileText,
+  TrendingUp,
   Settings,
   Plus,
-  ChevronRight
+  ChevronRight,
 } from "lucide-react";
 
 const Dashboard = () => {
   const { user, loading, signOut } = useAuth();
   const navigate = useNavigate();
+  const { stats, recentIdeas, activity, isLoading: statsLoading } = useDashboardStats();
 
   // Redirect if not logged in
   useEffect(() => {
@@ -84,9 +89,7 @@ const Dashboard = () => {
               <div className="w-9 h-9 rounded-xl bg-gradient-warm flex items-center justify-center">
                 <Sparkles className="w-5 h-5 text-white" />
               </div>
-              <span className="font-display font-bold text-xl text-foreground">
-                SPARK
-              </span>
+              <span className="font-display font-bold text-xl text-foreground">SPARK</span>
             </Link>
 
             <div className="flex items-center gap-4">
@@ -97,7 +100,7 @@ const Dashboard = () => {
               </Button>
               <Button variant="outline" onClick={handleSignOut} className="gap-2">
                 <LogOut className="w-4 h-4" />
-                Sign Out
+                <span className="hidden sm:inline">Sign Out</span>
               </Button>
             </div>
           </div>
@@ -108,79 +111,77 @@ const Dashboard = () => {
       <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Welcome Section */}
         <div className="mb-8">
-          <h1 className="font-display text-3xl font-bold text-foreground mb-2">
-            Welcome back! 👋
-          </h1>
-          <p className="text-muted-foreground">
-            Ready to discover your next big business idea?
-          </p>
+          <h1 className="font-display text-3xl font-bold text-foreground mb-2">Welcome back! 👋</h1>
+          <p className="text-muted-foreground">Ready to discover your next big business idea?</p>
         </div>
 
         {/* Stats Overview */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          {[
-            { label: "Ideas Generated", value: "0", color: "primary" },
-            { label: "Saved Ideas", value: "0", color: "success" },
-            { label: "Documents", value: "0", color: "accent" },
-            { label: "Wizard Sessions", value: "0", color: "warning" },
-          ].map((stat) => (
-            <div key={stat.label} className="bg-card rounded-xl border border-border p-4">
-              <div className={`font-display text-2xl font-bold text-${stat.color}`}>
-                {stat.value}
-              </div>
-              <div className="text-sm text-muted-foreground">{stat.label}</div>
-            </div>
-          ))}
-        </div>
-
-        {/* Quick Actions */}
         <div className="mb-8">
-          <h2 className="font-display text-xl font-semibold text-foreground mb-4">
-            Quick Actions
-          </h2>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {quickActions.map((action) => (
-              <Link
-                key={action.label}
-                to={action.href}
-                className="group bg-card rounded-xl border border-border p-5 hover:border-primary/30 transition-all duration-300 card-warm"
-              >
-                <div className={`
-                  w-12 h-12 rounded-xl flex items-center justify-center mb-4
-                  ${action.color === 'primary' ? 'bg-primary/10 text-primary' : ''}
-                  ${action.color === 'success' ? 'bg-success/10 text-success' : ''}
-                  ${action.color === 'accent' ? 'bg-accent/10 text-accent' : ''}
-                  ${action.color === 'warning' ? 'bg-warning/10 text-warning' : ''}
-                  group-hover:scale-110 transition-transform
-                `}>
-                  <action.icon className="w-6 h-6" />
-                </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-semibold text-foreground">{action.label}</h3>
-                    <p className="text-sm text-muted-foreground">{action.description}</p>
-                  </div>
-                  <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
-                </div>
-              </Link>
-            ))}
-          </div>
+          <StatsCards stats={stats} isLoading={statsLoading} />
         </div>
 
-        {/* CTA Section */}
-        <div className="bg-gradient-to-r from-primary/10 via-accent/10 to-success/10 rounded-2xl p-8 text-center">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-warm flex items-center justify-center mx-auto mb-4">
-            <Sparkles className="w-8 h-8 text-white" />
+        {/* Recent Ideas Carousel */}
+        <div className="mb-8">
+          <RecentIdeasCarousel ideas={recentIdeas} isLoading={statsLoading} />
+        </div>
+
+        {/* Two Column Layout: Quick Actions + Activity Feed */}
+        <div className="grid lg:grid-cols-3 gap-8">
+          {/* Quick Actions */}
+          <div className="lg:col-span-2">
+            <h2 className="font-display text-xl font-semibold text-foreground mb-4">Quick Actions</h2>
+            <div className="grid sm:grid-cols-2 gap-4">
+              {quickActions.map((action) => (
+                <Link
+                  key={action.label}
+                  to={action.href}
+                  className="group bg-card rounded-xl border border-border p-5 hover:border-primary/30 transition-all duration-300 card-warm"
+                >
+                  <div
+                    className={`
+                    w-12 h-12 rounded-xl flex items-center justify-center mb-4
+                    ${action.color === "primary" ? "bg-primary/10 text-primary" : ""}
+                    ${action.color === "success" ? "bg-success/10 text-success" : ""}
+                    ${action.color === "accent" ? "bg-accent/10 text-accent" : ""}
+                    ${action.color === "warning" ? "bg-warning/10 text-warning" : ""}
+                    group-hover:scale-110 transition-transform
+                  `}
+                  >
+                    <action.icon className="w-6 h-6" />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="font-semibold text-foreground">{action.label}</h3>
+                      <p className="text-sm text-muted-foreground">{action.description}</p>
+                    </div>
+                    <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
+                  </div>
+                </Link>
+              ))}
+            </div>
+
+            {/* CTA Section */}
+            <div className="mt-8 bg-gradient-to-r from-primary/10 via-accent/10 to-success/10 rounded-2xl p-8 text-center">
+              <div className="w-16 h-16 rounded-2xl bg-gradient-warm flex items-center justify-center mx-auto mb-4">
+                <Sparkles className="w-8 h-8 text-white" />
+              </div>
+              <h2 className="font-display text-2xl font-bold text-foreground mb-2">
+                Ready to Find Your Perfect Business?
+              </h2>
+              <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                Complete our quick wizard to get personalized AI-powered business recommendations
+                tailored to you.
+              </p>
+              <Button className="btn-gradient rounded-full px-8 py-6 text-lg" asChild>
+                <Link to="/wizard">Start the Wizard</Link>
+              </Button>
+            </div>
           </div>
-          <h2 className="font-display text-2xl font-bold text-foreground mb-2">
-            Ready to Find Your Perfect Business?
-          </h2>
-          <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-            Complete our quick wizard to get personalized AI-powered business recommendations tailored to you.
-          </p>
-          <Button className="btn-gradient rounded-full px-8 py-6 text-lg" asChild>
-            <Link to="/wizard">Start the Wizard</Link>
-          </Button>
+
+          {/* Activity Feed */}
+          <div className="lg:col-span-1">
+            <ActivityFeed activity={activity} isLoading={statsLoading} />
+          </div>
         </div>
       </main>
     </div>
