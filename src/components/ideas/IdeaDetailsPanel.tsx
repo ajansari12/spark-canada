@@ -10,8 +10,11 @@ import {
   Sparkles,
   X,
   Trash2,
+  FileText,
+  Loader2,
 } from "lucide-react";
 import { format } from "date-fns";
+import { useDocuments } from "@/hooks/useDocuments";
 
 interface IdeaDetailsPanelProps {
   idea: BusinessIdea | null;
@@ -20,6 +23,14 @@ interface IdeaDetailsPanelProps {
 }
 
 export const IdeaDetailsPanel = ({ idea, onClose, onDelete }: IdeaDetailsPanelProps) => {
+  const { generating, generateBusinessPlan } = useDocuments();
+
+  const handleExportPDF = async () => {
+    if (idea) {
+      await generateBusinessPlan(idea.id);
+    }
+  };
+
   const formatCurrency = (value: number | null): string => {
     if (value === null) return "N/A";
     if (value >= 1000) {
@@ -168,7 +179,21 @@ export const IdeaDetailsPanel = ({ idea, onClose, onDelete }: IdeaDetailsPanelPr
       )}
 
       {/* Actions */}
-      <div className="pt-4 border-t border-border">
+      <div className="pt-4 border-t border-border flex items-center gap-3">
+        <Button
+          variant="default"
+          size="sm"
+          onClick={handleExportPDF}
+          disabled={generating}
+          className="gap-2"
+        >
+          {generating ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <FileText className="w-4 h-4" />
+          )}
+          {generating ? "Generating..." : "Export Business Plan"}
+        </Button>
         <Button
           variant="destructive"
           size="sm"
@@ -176,7 +201,7 @@ export const IdeaDetailsPanel = ({ idea, onClose, onDelete }: IdeaDetailsPanelPr
           className="gap-2"
         >
           <Trash2 className="w-4 h-4" />
-          Delete Idea
+          Delete
         </Button>
       </div>
     </div>
