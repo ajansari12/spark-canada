@@ -9,10 +9,10 @@ const footerLinks = {
     { label: "Blog", href: "/blog" },
   ],
   resources: [
-    { label: "Business Guides", href: "/guides" },
-    { label: "Grant Database", href: "/grants" },
-    { label: "Market Trends", href: "/trends" },
-    { label: "Success Stories", href: "/stories" },
+    { label: "Grant Database", href: "/app/grants" },
+    { label: "Market Trends", href: "/app/trends" },
+    { label: "My Ideas", href: "/app/ideas" },
+    { label: "Documents", href: "/app/documents" },
   ],
   company: [
     { label: "About Us", href: "/about" },
