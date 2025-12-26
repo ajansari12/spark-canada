@@ -142,7 +142,9 @@ export type Database = {
           created_at: string
           email: string | null
           full_name: string | null
+          generation_reset_date: string | null
           id: string
+          idea_generation_count: number
           province: string | null
           updated_at: string
         }
@@ -152,7 +154,9 @@ export type Database = {
           created_at?: string
           email?: string | null
           full_name?: string | null
+          generation_reset_date?: string | null
           id: string
+          idea_generation_count?: number
           province?: string | null
           updated_at?: string
         }
@@ -162,7 +166,9 @@ export type Database = {
           created_at?: string
           email?: string | null
           full_name?: string | null
+          generation_reset_date?: string | null
           id?: string
+          idea_generation_count?: number
           province?: string | null
           updated_at?: string
         }
