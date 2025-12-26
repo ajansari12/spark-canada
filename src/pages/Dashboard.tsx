@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useDashboardStats } from "@/hooks/useDashboardStats";
 import { Button } from "@/components/ui/button";
@@ -15,11 +15,13 @@ import {
   Settings,
   Plus,
   ChevronRight,
+  DollarSign,
 } from "lucide-react";
 
 const Dashboard = () => {
   const { user, loading, signOut } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const { stats, recentIdeas, activity, isLoading: statsLoading } = useDashboardStats();
 
   // Redirect if not logged in
@@ -71,6 +73,13 @@ const Dashboard = () => {
       color: "accent",
     },
     {
+      icon: DollarSign,
+      label: "Grants & Funding",
+      description: "Discover Canadian business funding",
+      href: "/app/grants",
+      color: "success",
+    },
+    {
       icon: TrendingUp,
       label: "Market Trends",
       description: "Explore trending opportunities",
@@ -79,18 +88,45 @@ const Dashboard = () => {
     },
   ];
 
+  const navLinks = [
+    { href: "/app/dashboard", label: "Dashboard" },
+    { href: "/app/ideas", label: "Ideas" },
+    { href: "/app/documents", label: "Documents" },
+    { href: "/app/grants", label: "Grants" },
+    { href: "/app/trends", label: "Trends" },
+  ];
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="border-b border-border bg-card">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            <Link to="/" className="flex items-center gap-2">
-              <div className="w-9 h-9 rounded-xl bg-gradient-warm flex items-center justify-center">
-                <Sparkles className="w-5 h-5 text-white" />
-              </div>
-              <span className="font-display font-bold text-xl text-foreground">SPARK</span>
-            </Link>
+            <div className="flex items-center gap-8">
+              <Link to="/" className="flex items-center gap-2">
+                <div className="w-9 h-9 rounded-xl bg-gradient-warm flex items-center justify-center">
+                  <Sparkles className="w-5 h-5 text-white" />
+                </div>
+                <span className="font-display font-bold text-xl text-foreground">SPARK</span>
+              </Link>
+
+              {/* Navigation Links */}
+              <nav className="hidden md:flex items-center gap-1">
+                {navLinks.map((link) => (
+                  <Link
+                    key={link.href}
+                    to={link.href}
+                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      location.pathname === link.href
+                        ? "bg-primary/10 text-primary"
+                        : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                    }`}
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+              </nav>
+            </div>
 
             <div className="flex items-center gap-4">
               <Button variant="ghost" size="icon" asChild>
