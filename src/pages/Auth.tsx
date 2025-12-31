@@ -293,6 +293,15 @@ const Auth = () => {
             </p>
           </div>
 
+          {/* Forgot Password Link */}
+          {isLogin && (
+            <div className="mt-4 text-center">
+              <Link to="/reset-password" className="text-sm text-primary hover:underline">
+                Forgot your password?
+              </Link>
+            </div>
+          )}
+
           {/* Terms */}
           {!isLogin && (
             <p className="mt-6 text-xs text-muted-foreground text-center">
