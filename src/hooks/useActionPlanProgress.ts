@@ -116,7 +116,7 @@ export const useActionPlanProgress = () => {
 
       const { error } = await supabase
         .from("ideas")
-        .update({ action_plan: updatedPlan })
+        .update({ action_plan: updatedPlan } as any)
         .eq("id", ideaId);
 
       if (error) throw error;
@@ -173,7 +173,7 @@ export const useActionPlanProgress = () => {
 
       const { error } = await supabase
         .from("ideas")
-        .update({ action_plan: updatedPlan })
+        .update({ action_plan: updatedPlan } as any)
         .eq("id", ideaId);
 
       if (error) throw error;

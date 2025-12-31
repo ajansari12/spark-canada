@@ -104,12 +104,12 @@ export const useExports = () => {
       data = ideas.map(idea => {
         const filtered: Record<string, unknown> = {};
         selectedColumns.forEach(key => {
-          filtered[key] = (idea as Record<string, unknown>)[key];
+          filtered[key] = (idea as unknown as Record<string, unknown>)[key];
         });
         return filtered;
       });
     } else {
-      data = ideas;
+      data = ideas.map(idea => idea as unknown as Record<string, unknown>);
     }
 
     const json = JSON.stringify(data, null, 2);

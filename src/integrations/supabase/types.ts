@@ -111,6 +111,8 @@ export type Database = {
       }
       ideas: {
         Row: {
+          action_plan: Json | null
+          ai_leverage_score: number | null
           competitors: Json | null
           created_at: string
           description: string
@@ -122,9 +124,13 @@ export type Database = {
           monthly_revenue_max: number | null
           monthly_revenue_min: number | null
           name: string
+          newcomer_friendly: boolean | null
+          pain_point_severity: number | null
           province: string | null
           quick_wins: Json | null
+          recession_resistance_score: number | null
           session_id: string | null
+          side_hustle_compatible: boolean | null
           skills_match_score: number | null
           startup_cost_max: number | null
           startup_cost_min: number | null
@@ -133,6 +139,8 @@ export type Database = {
           viability_score: number | null
         }
         Insert: {
+          action_plan?: Json | null
+          ai_leverage_score?: number | null
           competitors?: Json | null
           created_at?: string
           description: string
@@ -144,9 +152,13 @@ export type Database = {
           monthly_revenue_max?: number | null
           monthly_revenue_min?: number | null
           name: string
+          newcomer_friendly?: boolean | null
+          pain_point_severity?: number | null
           province?: string | null
           quick_wins?: Json | null
+          recession_resistance_score?: number | null
           session_id?: string | null
+          side_hustle_compatible?: boolean | null
           skills_match_score?: number | null
           startup_cost_max?: number | null
           startup_cost_min?: number | null
@@ -155,6 +167,8 @@ export type Database = {
           viability_score?: number | null
         }
         Update: {
+          action_plan?: Json | null
+          ai_leverage_score?: number | null
           competitors?: Json | null
           created_at?: string
           description?: string
@@ -166,9 +180,13 @@ export type Database = {
           monthly_revenue_max?: number | null
           monthly_revenue_min?: number | null
           name?: string
+          newcomer_friendly?: boolean | null
+          pain_point_severity?: number | null
           province?: string | null
           quick_wins?: Json | null
+          recession_resistance_score?: number | null
           session_id?: string | null
+          side_hustle_compatible?: boolean | null
           skills_match_score?: number | null
           startup_cost_max?: number | null
           startup_cost_min?: number | null
@@ -257,6 +275,104 @@ export type Database = {
           wizard_data?: Json
         }
         Relationships: []
+      }
+      success_stories: {
+        Row: {
+          ai_tools_used: string[] | null
+          approved_at: string | null
+          business_name: string
+          business_photo_url: string | null
+          city: string | null
+          created_at: string
+          display_name: string | null
+          employees_count: number | null
+          id: string
+          idea_id: string | null
+          industry: string | null
+          is_anonymous: boolean | null
+          is_newcomer: boolean | null
+          is_side_hustle: boolean | null
+          monthly_revenue: number | null
+          photo_url: string | null
+          province: string | null
+          quote: string | null
+          spark_helped: boolean | null
+          startup_cost: number | null
+          status: string
+          story: string
+          time_to_first_sale: string | null
+          title: string
+          updated_at: string
+          user_id: string
+          website_url: string | null
+        }
+        Insert: {
+          ai_tools_used?: string[] | null
+          approved_at?: string | null
+          business_name: string
+          business_photo_url?: string | null
+          city?: string | null
+          created_at?: string
+          display_name?: string | null
+          employees_count?: number | null
+          id?: string
+          idea_id?: string | null
+          industry?: string | null
+          is_anonymous?: boolean | null
+          is_newcomer?: boolean | null
+          is_side_hustle?: boolean | null
+          monthly_revenue?: number | null
+          photo_url?: string | null
+          province?: string | null
+          quote?: string | null
+          spark_helped?: boolean | null
+          startup_cost?: number | null
+          status?: string
+          story: string
+          time_to_first_sale?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+          website_url?: string | null
+        }
+        Update: {
+          ai_tools_used?: string[] | null
+          approved_at?: string | null
+          business_name?: string
+          business_photo_url?: string | null
+          city?: string | null
+          created_at?: string
+          display_name?: string | null
+          employees_count?: number | null
+          id?: string
+          idea_id?: string | null
+          industry?: string | null
+          is_anonymous?: boolean | null
+          is_newcomer?: boolean | null
+          is_side_hustle?: boolean | null
+          monthly_revenue?: number | null
+          photo_url?: string | null
+          province?: string | null
+          quote?: string | null
+          spark_helped?: boolean | null
+          startup_cost?: number | null
+          status?: string
+          story?: string
+          time_to_first_sale?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+          website_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "success_stories_idea_id_fkey"
+            columns: ["idea_id"]
+            isOneToOne: false
+            referencedRelation: "ideas"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {

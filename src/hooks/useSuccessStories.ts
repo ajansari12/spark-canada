@@ -47,14 +47,14 @@ export const useSuccessStories = () => {
     queryKey: ["success-stories"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("success_stories")
+        .from("success_stories" as any)
         .select("*")
         .in("status", ["approved", "featured"])
         .order("created_at", { ascending: false });
 
       if (error) throw error;
 
-      return (data || []) as SuccessStory[];
+      return (data || []) as unknown as SuccessStory[];
     },
   });
 
@@ -65,14 +65,14 @@ export const useSuccessStories = () => {
       if (!user) return [];
 
       const { data, error } = await supabase
-        .from("success_stories")
+        .from("success_stories" as any)
         .select("*")
         .eq("user_id", user.id)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
 
-      return (data || []) as SuccessStory[];
+      return (data || []) as unknown as SuccessStory[];
     },
     enabled: !!user,
   });
@@ -138,7 +138,7 @@ export const useSuccessStories = () => {
       if (!user) throw new Error("Must be logged in to submit a story");
 
       const { data: newStory, error } = await supabase
-        .from("success_stories")
+        .from("success_stories" as any)
         .insert({
           ...data,
           user_id: user.id,
@@ -149,7 +149,7 @@ export const useSuccessStories = () => {
 
       if (error) throw error;
 
-      return newStory as SuccessStory;
+      return newStory as unknown as SuccessStory;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["my-success-stories"] });
@@ -174,7 +174,7 @@ export const useSuccessStories = () => {
       if (!user) throw new Error("Must be logged in to update a story");
 
       const { data: updatedStory, error } = await supabase
-        .from("success_stories")
+        .from("success_stories" as any)
         .update(data)
         .eq("id", id)
         .eq("user_id", user.id)
@@ -184,7 +184,7 @@ export const useSuccessStories = () => {
 
       if (error) throw error;
 
-      return updatedStory as SuccessStory;
+      return updatedStory as unknown as SuccessStory;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["my-success-stories"] });
@@ -208,7 +208,7 @@ export const useSuccessStories = () => {
       if (!user) throw new Error("Must be logged in to delete a story");
 
       const { error } = await supabase
-        .from("success_stories")
+        .from("success_stories" as any)
         .delete()
         .eq("id", id)
         .eq("user_id", user.id)
