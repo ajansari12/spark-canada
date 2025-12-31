@@ -75,6 +75,7 @@ export type Database = {
           id: string
           industries: string[] | null
           is_active: boolean
+          last_verified_at: string | null
           name: string
           newcomer_eligible: boolean | null
           province: string | null
@@ -98,6 +99,7 @@ export type Database = {
           id?: string
           industries?: string[] | null
           is_active?: boolean
+          last_verified_at?: string | null
           name: string
           newcomer_eligible?: boolean | null
           province?: string | null
@@ -121,6 +123,7 @@ export type Database = {
           id?: string
           industries?: string[] | null
           is_active?: boolean
+          last_verified_at?: string | null
           name?: string
           newcomer_eligible?: boolean | null
           province?: string | null
