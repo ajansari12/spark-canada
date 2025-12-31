@@ -1,0 +1,19 @@
+project_id = "tuwoxwbsovxaudfqjojx"
+
+[functions.generate-ideas]
+verify_jwt = false
+
+[functions.create-checkout]
+verify_jwt = false
+
+[functions.check-subscription]
+verify_jwt = false
+
+[functions.customer-portal]
+verify_jwt = false
+
+[functions.generate-pdf]
+verify_jwt = false
+
+[functions.chat]
+verify_jwt = false
