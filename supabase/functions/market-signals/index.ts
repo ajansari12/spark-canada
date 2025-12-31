@@ -52,6 +52,7 @@ serve(async (req) => {
     const PERPLEXITY_API_KEY = Deno.env.get("PERPLEXITY_API_KEY");
 
     if (PERPLEXITY_API_KEY) {
+      console.log("Using Perplexity API for real-time market signals");
       try {
         const perplexityResponse = await fetch("https://api.perplexity.ai/chat/completions", {
           method: "POST",
@@ -60,7 +61,8 @@ serve(async (req) => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            model: "llama-3.1-sonar-large-128k-online",
+            model: "sonar-pro",
+            search_recency_filter: "month",
             messages: [
               {
                 role: "system",
@@ -156,7 +158,8 @@ Provide a JSON response with this structure:
           );
         }
       } catch (error) {
-        console.error("Perplexity error:", error);
+        console.error("Perplexity API error:", error);
+        console.log("Falling back to Claude/Lovable AI");
         // Fall through to Claude
       }
     }
