@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@14.21.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { Resend } from "https://esm.sh/resend@2.0.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -21,21 +22,40 @@ serve(async (req) => {
     logStep("Webhook received");
 
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
+    const webhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET");
+    const resendKey = Deno.env.get("RESEND_API_KEY");
+    
     if (!stripeKey) {
       throw new Error("STRIPE_SECRET_KEY not configured");
     }
+    
+    if (!webhookSecret) {
+      throw new Error("STRIPE_WEBHOOK_SECRET not configured");
+    }
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
+    const resend = resendKey ? new Resend(resendKey) : null;
     
     // Get the raw body for signature verification
     const body = await req.text();
     const signature = req.headers.get("stripe-signature");
     
-    logStep("Processing webhook", { hasSignature: !!signature });
+    if (!signature) {
+      throw new Error("No stripe-signature header found");
+    }
+    
+    logStep("Verifying webhook signature");
 
-    // Parse the event - in production you'd verify the signature
-    // For now, we'll parse directly since webhook secret isn't set up
-    const event = JSON.parse(body) as Stripe.Event;
+    // Verify the webhook signature
+    let event: Stripe.Event;
+    try {
+      event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
+      logStep("Signature verified successfully");
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+      logStep("Signature verification failed", { error: message });
+      throw new Error(`Webhook signature verification failed: ${message}`);
+    }
     
     logStep("Event type", { type: event.type });
 
@@ -75,6 +95,28 @@ serve(async (req) => {
         if (customer.deleted) break;
         
         logStep("Subscription ended for", { email: customer.email });
+        
+        // Send cancellation email
+        if (resend && customer.email) {
+          try {
+            await resend.emails.send({
+              from: "Spark Business Buddy <onboarding@resend.dev>",
+              to: [customer.email],
+              subject: "Your subscription has been cancelled",
+              html: `
+                <h1>Subscription Cancelled</h1>
+                <p>Hi there,</p>
+                <p>Your Spark Business Buddy subscription has been cancelled.</p>
+                <p>We're sorry to see you go! If you change your mind, you can always resubscribe from your account.</p>
+                <p>If you have any feedback or questions, please don't hesitate to reach out.</p>
+                <p>Best regards,<br>The Spark Business Buddy Team</p>
+              `,
+            });
+            logStep("Cancellation email sent", { email: customer.email });
+          } catch (emailError) {
+            logStep("Failed to send cancellation email", { error: emailError });
+          }
+        }
         break;
       }
 
@@ -94,7 +136,29 @@ serve(async (req) => {
           attemptCount: invoice.attempt_count 
         });
         
-        // Could send email notification here
+        // Get customer email and send notification
+        const failedCustomer = await stripe.customers.retrieve(invoice.customer as string);
+        if (!failedCustomer.deleted && resend && failedCustomer.email) {
+          try {
+            await resend.emails.send({
+              from: "Spark Business Buddy <onboarding@resend.dev>",
+              to: [failedCustomer.email],
+              subject: "Payment Failed - Action Required",
+              html: `
+                <h1>Payment Failed</h1>
+                <p>Hi there,</p>
+                <p>We were unable to process your payment for Spark Business Buddy.</p>
+                <p><strong>Attempt ${invoice.attempt_count}</strong> - Please update your payment method to continue enjoying our services.</p>
+                <p>You can update your payment information by logging into your account and visiting the subscription settings.</p>
+                <p>If you need any assistance, please don't hesitate to reach out.</p>
+                <p>Best regards,<br>The Spark Business Buddy Team</p>
+              `,
+            });
+            logStep("Payment failed email sent", { email: failedCustomer.email });
+          } catch (emailError) {
+            logStep("Failed to send payment failed email", { error: emailError });
+          }
+        }
         break;
       }
 
