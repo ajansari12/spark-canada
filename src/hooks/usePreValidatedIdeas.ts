@@ -1161,5 +1161,6 @@ export const usePreValidatedIdeas = () => {
     industries: INDUSTRIES,
     provinces: PROVINCES,
     totalCount: PRE_VALIDATED_IDEAS.length,
+    isLoading: false, // Static data, no loading state
   };
 };

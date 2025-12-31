@@ -44,7 +44,8 @@ export const useIdeas = () => {
         quick_wins: Array.isArray(idea.quick_wins) ? idea.quick_wins : [],
         competitors: Array.isArray(idea.competitors) ? idea.competitors : [],
         grants: Array.isArray(idea.grants) ? idea.grants : [],
-      })) as BusinessIdea[];
+        action_plan: idea.action_plan as unknown as BusinessIdea['action_plan'],
+      })) as unknown as BusinessIdea[];
     },
     enabled: !!user,
   });

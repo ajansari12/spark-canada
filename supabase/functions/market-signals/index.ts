@@ -313,8 +313,9 @@ Base your analysis on general knowledge of Canadian markets as of early 2025.`
 
   } catch (error) {
     console.error("Market signals error:", error);
+    const errorMessage = error instanceof Error ? error.message : "Failed to generate market signals";
     return new Response(
-      JSON.stringify({ error: error.message || "Failed to generate market signals" }),
+      JSON.stringify({ error: errorMessage }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
