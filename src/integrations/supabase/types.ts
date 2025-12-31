@@ -60,10 +60,15 @@ export type Database = {
       }
       grants: {
         Row: {
+          age_restrictions: string | null
+          application_complexity: number | null
+          approval_time_weeks: number | null
           created_at: string
           deadline: string | null
           description: string
           eligibility: string | null
+          eligibility_criteria: Json | null
+          experience_required: string | null
           funding_max: number | null
           funding_min: number | null
           grant_type: string
@@ -71,15 +76,22 @@ export type Database = {
           industries: string[] | null
           is_active: boolean
           name: string
+          newcomer_eligible: boolean | null
           province: string | null
+          side_hustle_eligible: boolean | null
           updated_at: string
           url: string
         }
         Insert: {
+          age_restrictions?: string | null
+          application_complexity?: number | null
+          approval_time_weeks?: number | null
           created_at?: string
           deadline?: string | null
           description: string
           eligibility?: string | null
+          eligibility_criteria?: Json | null
+          experience_required?: string | null
           funding_max?: number | null
           funding_min?: number | null
           grant_type?: string
@@ -87,15 +99,22 @@ export type Database = {
           industries?: string[] | null
           is_active?: boolean
           name: string
+          newcomer_eligible?: boolean | null
           province?: string | null
+          side_hustle_eligible?: boolean | null
           updated_at?: string
           url: string
         }
         Update: {
+          age_restrictions?: string | null
+          application_complexity?: number | null
+          approval_time_weeks?: number | null
           created_at?: string
           deadline?: string | null
           description?: string
           eligibility?: string | null
+          eligibility_criteria?: Json | null
+          experience_required?: string | null
           funding_max?: number | null
           funding_min?: number | null
           grant_type?: string
@@ -103,7 +122,9 @@ export type Database = {
           industries?: string[] | null
           is_active?: boolean
           name?: string
+          newcomer_eligible?: boolean | null
           province?: string | null
+          side_hustle_eligible?: boolean | null
           updated_at?: string
           url?: string
         }
