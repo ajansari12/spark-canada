@@ -25,6 +25,10 @@ import Terms from "./pages/legal/Terms";
 import Privacy from "./pages/legal/Privacy";
 import Disclaimer from "./pages/legal/Disclaimer";
 import NotFound from "./pages/NotFound";
+import ResetPassword from "./pages/ResetPassword";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminGrants from "./pages/admin/AdminGrants";
+import AdminStories from "./pages/admin/AdminStories";
 
 const queryClient = new QueryClient();
 
@@ -55,6 +59,10 @@ const App = () => (
                 <Route path="/legal/terms" element={<RouteErrorBoundary routeName="Terms"><Terms /></RouteErrorBoundary>} />
                 <Route path="/legal/privacy" element={<RouteErrorBoundary routeName="Privacy"><Privacy /></RouteErrorBoundary>} />
                 <Route path="/legal/disclaimer" element={<RouteErrorBoundary routeName="Disclaimer"><Disclaimer /></RouteErrorBoundary>} />
+                <Route path="/reset-password" element={<RouteErrorBoundary routeName="ResetPassword"><ResetPassword /></RouteErrorBoundary>} />
+                <Route path="/admin" element={<RouteErrorBoundary routeName="AdminDashboard"><AdminDashboard /></RouteErrorBoundary>} />
+                <Route path="/admin/grants" element={<RouteErrorBoundary routeName="AdminGrants"><AdminGrants /></RouteErrorBoundary>} />
+                <Route path="/admin/stories" element={<RouteErrorBoundary routeName="AdminStories"><AdminStories /></RouteErrorBoundary>} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
