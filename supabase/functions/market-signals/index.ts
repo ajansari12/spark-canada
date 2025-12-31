@@ -254,62 +254,59 @@ Base your analysis on general knowledge of Canadian markets as of early 2025.`
       }
     }
 
-    // Final fallback: Use Lovable AI Gateway (same as other functions)
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY") || Deno.env.get("OPENAI_API_KEY");
+    // Final fallback: Use Lovable AI Gateway (built-in, no API key required)
+    console.log("Using Lovable AI gateway for market signals");
+    
+    const lovableResponse = await fetch("https://api.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "google/gemini-2.5-flash",
+        messages: [
+          {
+            role: "system",
+            content: "You are a Canadian market analyst. Provide market signals analysis as JSON."
+          },
+          {
+            role: "user",
+            content: `Analyze market signals for "${ideaName}" in ${industry} industry, ${province} province. Respond with JSON containing trends (array of strings), marketConditions (object with sentiment: positive/neutral/negative, factors: array), competitiveLandscape (object with saturation: low/medium/high, opportunities: array), timingScore (number 1-10), and timingReason (string).`
+          }
+        ],
+        temperature: 0.3,
+      }),
+    });
 
-    if (LOVABLE_API_KEY) {
-      const lovableResponse = await fetch("https://api.lovable.dev/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${LOVABLE_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: "gpt-4o-mini",
-          messages: [
-            {
-              role: "system",
-              content: "You are a Canadian market analyst. Provide market signals analysis as JSON."
-            },
-            {
-              role: "user",
-              content: `Analyze market signals for "${ideaName}" in ${industry} industry, ${province} province. Respond with JSON containing trends, marketConditions (sentiment, factors), competitiveLandscape (saturation, opportunities), timingScore (1-10), and timingReason.`
-            }
-          ],
-          temperature: 0.3,
-        }),
-      });
+    if (lovableResponse.ok) {
+      const data = await lovableResponse.json();
+      const content = data.choices[0].message.content;
 
-      if (lovableResponse.ok) {
-        const data = await lovableResponse.json();
-        const content = data.choices[0].message.content;
-
-        let parsedSignals: Partial<MarketSignals>;
-        try {
-          const jsonMatch = content.match(/\{[\s\S]*\}/);
-          parsedSignals = jsonMatch ? JSON.parse(jsonMatch[0]) : {};
-        } catch {
-          parsedSignals = {};
-        }
-
-        const signals: MarketSignals = {
-          trends: parsedSignals.trends || ["Market is evolving", "Digital adoption growing", "Consumer preferences shifting"],
-          marketConditions: parsedSignals.marketConditions || { sentiment: 'neutral', factors: ["Stable economy", "Growing demand"] },
-          competitiveLandscape: parsedSignals.competitiveLandscape || { saturation: 'medium', opportunities: ["Market gaps exist"] },
-          timingScore: parsedSignals.timingScore || 6,
-          timingReason: parsedSignals.timingReason || "Moderate opportunity with careful execution.",
-          generatedAt: new Date().toISOString(),
-          provider: 'lovable',
-        };
-
-        return new Response(
-          JSON.stringify({ success: true, signals }),
-          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+      let parsedSignals: Partial<MarketSignals>;
+      try {
+        const jsonMatch = content.match(/\{[\s\S]*\}/);
+        parsedSignals = jsonMatch ? JSON.parse(jsonMatch[0]) : {};
+      } catch {
+        parsedSignals = {};
       }
+
+      const signals: MarketSignals = {
+        trends: parsedSignals.trends || ["Market is evolving", "Digital adoption growing", "Consumer preferences shifting"],
+        marketConditions: parsedSignals.marketConditions || { sentiment: 'neutral', factors: ["Stable economy", "Growing demand"] },
+        competitiveLandscape: parsedSignals.competitiveLandscape || { saturation: 'medium', opportunities: ["Market gaps exist"] },
+        timingScore: parsedSignals.timingScore || 6,
+        timingReason: parsedSignals.timingReason || "Moderate opportunity with careful execution.",
+        generatedAt: new Date().toISOString(),
+        provider: 'lovable',
+      };
+
+      return new Response(
+        JSON.stringify({ success: true, signals }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
-    throw new Error("No AI provider available. Please configure PERPLEXITY_API_KEY, ANTHROPIC_API_KEY, or LOVABLE_API_KEY.");
+    throw new Error("Failed to get response from AI provider");
 
   } catch (error) {
     console.error("Market signals error:", error);
