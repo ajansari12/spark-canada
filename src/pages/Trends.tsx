@@ -1,9 +1,12 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { AppHeader } from "@/components/layout/AppHeader";
-import { TrendingUp, TrendingDown, Minus, MapPin, Calendar, Lightbulb, BarChart3 } from "lucide-react";
-import { useState } from "react";
+import { TrendingUp, TrendingDown, Minus, MapPin, Calendar, Lightbulb, BarChart3, RefreshCw, Sparkles } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useTrendsData } from "@/hooks/useTrendsData";
 import {
   BarChart,
   Bar,
@@ -22,24 +25,15 @@ import {
 
 const PROVINCES = [
   { value: "all", label: "All Canada" },
-  { value: "ON", label: "Ontario" },
-  { value: "BC", label: "British Columbia" },
-  { value: "AB", label: "Alberta" },
-  { value: "QC", label: "Quebec" },
+  { value: "Ontario", label: "Ontario" },
+  { value: "British Columbia", label: "British Columbia" },
+  { value: "Alberta", label: "Alberta" },
+  { value: "Quebec", label: "Quebec" },
+  { value: "Manitoba", label: "Manitoba" },
+  { value: "Saskatchewan", label: "Saskatchewan" },
 ];
 
-// Mock data for trends - in production this would come from an API
-const industryGrowthData = [
-  { industry: "Tech & AI", growth: 24, score: 92 },
-  { industry: "E-commerce", growth: 18, score: 88 },
-  { industry: "Healthcare", growth: 15, score: 85 },
-  { industry: "Clean Energy", growth: 22, score: 90 },
-  { industry: "Food & Bev", growth: 8, score: 75 },
-  { industry: "Real Estate", growth: -3, score: 62 },
-  { industry: "Retail", growth: 5, score: 68 },
-  { industry: "Manufacturing", growth: 7, score: 72 },
-];
-
+// Static seasonal performance data (this doesn't change with API)
 const seasonalData = [
   { month: "Jan", retail: 45, services: 60, tech: 80 },
   { month: "Feb", retail: 40, services: 65, tech: 82 },
@@ -55,60 +49,98 @@ const seasonalData = [
   { month: "Dec", retail: 100, services: 68, tech: 88 },
 ];
 
-const businessTypeData = [
-  { name: "Online Business", value: 35, color: "hsl(var(--primary))" },
-  { name: "Hybrid", value: 30, color: "hsl(var(--chart-2))" },
-  { name: "Brick & Mortar", value: 20, color: "hsl(var(--chart-3))" },
-  { name: "Service-based", value: 15, color: "hsl(var(--chart-4))" },
+// Default fallback data
+const defaultBusinessTypeData = [
+  { name: "Online Business", value: 35 },
+  { name: "Hybrid", value: 30 },
+  { name: "Brick & Mortar", value: 20 },
+  { name: "Service-based", value: 15 },
 ];
 
-const trendingOpportunities = [
+const CHART_COLORS = [
+  "hsl(var(--primary))",
+  "hsl(var(--chart-2))",
+  "hsl(var(--chart-3))",
+  "hsl(var(--chart-4))",
+];
+
+const defaultIndustryGrowthData = [
+  { industry: "Tech & AI", growth: 24, score: 92 },
+  { industry: "E-commerce", growth: 18, score: 88 },
+  { industry: "Healthcare", growth: 15, score: 85 },
+  { industry: "Clean Energy", growth: 22, score: 90 },
+  { industry: "Food & Bev", growth: 8, score: 75 },
+  { industry: "Real Estate", growth: -3, score: 62 },
+  { industry: "Retail", growth: 5, score: 68 },
+  { industry: "Manufacturing", growth: 7, score: 72 },
+];
+
+const defaultTrendingOpportunities = [
   {
     title: "AI-Powered Services",
-    description: "Businesses integrating AI tools for customer service, content creation, and automation are seeing 3x faster growth.",
-    trend: "up",
+    description: "Businesses integrating AI tools for customer service, content creation, and automation are seeing rapid growth.",
+    trend: "up" as const,
     growth: "+45%",
     category: "Technology",
   },
   {
     title: "Sustainable Products",
-    description: "Eco-friendly and sustainable product lines are outperforming traditional alternatives in consumer preference.",
-    trend: "up",
+    description: "Eco-friendly and sustainable product lines are outperforming traditional alternatives.",
+    trend: "up" as const,
     growth: "+28%",
     category: "Retail",
   },
   {
     title: "Remote Work Solutions",
-    description: "Tools and services supporting remote/hybrid work continue to show strong demand post-pandemic.",
-    trend: "up",
+    description: "Tools and services supporting remote/hybrid work continue to show strong demand.",
+    trend: "up" as const,
     growth: "+22%",
     category: "Services",
   },
   {
     title: "Local Food Production",
-    description: "Farm-to-table and local food production businesses are gaining market share in urban areas.",
-    trend: "up",
+    description: "Farm-to-table and local food production businesses are gaining market share.",
+    trend: "up" as const,
     growth: "+18%",
     category: "Food & Beverage",
   },
   {
     title: "Traditional Retail",
     description: "Pure brick-and-mortar retail without online presence continues to face challenges.",
-    trend: "down",
+    trend: "down" as const,
     growth: "-12%",
     category: "Retail",
   },
 ];
 
-const seasonalOpportunities = [
+const defaultSeasonalOpportunities = [
   { season: "Winter (Dec-Feb)", opportunities: ["Holiday retail", "Tax preparation services", "Indoor fitness", "Home renovation planning"] },
   { season: "Spring (Mar-May)", opportunities: ["Landscaping & gardening", "Moving services", "Wedding industry", "Outdoor equipment"] },
   { season: "Summer (Jun-Aug)", opportunities: ["Tourism & hospitality", "Outdoor recreation", "Food trucks & festivals", "Summer camps"] },
   { season: "Fall (Sep-Nov)", opportunities: ["Back-to-school retail", "Home heating services", "Halloween & Thanksgiving", "Year-end consulting"] },
 ];
 
+const defaultMarketInsights = [
+  { label: "35%", value: "of new businesses", description: "are purely online" },
+  { label: "$15K", value: "average startup cost", description: "in Canada" },
+  { label: "78%", value: "of successful startups", description: "use digital marketing" },
+];
+
 export default function Trends() {
   const [selectedProvince, setSelectedProvince] = useState("all");
+  const { trendsData, fetchTrends, isLoading, error } = useTrendsData();
+
+  // Fetch trends on mount and when province changes
+  useEffect(() => {
+    fetchTrends(selectedProvince);
+  }, [selectedProvince]);
+
+  // Use API data if available, otherwise use defaults
+  const industryGrowthData = trendsData?.industryGrowth || defaultIndustryGrowthData;
+  const trendingOpportunities = trendsData?.trendingOpportunities || defaultTrendingOpportunities;
+  const seasonalOpportunities = trendsData?.seasonalOpportunities || defaultSeasonalOpportunities;
+  const businessTypeData = trendsData?.businessTypeDistribution || defaultBusinessTypeData;
+  const marketInsights = trendsData?.marketInsights || defaultMarketInsights;
 
   const getTrendIcon = (trend: string) => {
     switch (trend) {
@@ -133,25 +165,85 @@ export default function Trends() {
         {/* Page Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-foreground mb-2">Market Trends Dashboard</h1>
+            <h1 className="text-3xl font-bold text-foreground mb-2">
+              Market Trends Dashboard
+              {trendsData && (
+                <Badge variant="outline" className="ml-3 text-xs font-normal">
+                  <Sparkles className="w-3 h-3 mr-1" />
+                  Live Data
+                </Badge>
+              )}
+            </h1>
             <p className="text-muted-foreground">
               Discover trending industries, seasonal opportunities, and market insights for Canadian businesses.
+              {trendsData?.generatedAt && (
+                <span className="text-xs ml-2">
+                  Updated: {new Date(trendsData.generatedAt).toLocaleDateString()}
+                </span>
+              )}
             </p>
           </div>
-          <Select value={selectedProvince} onValueChange={setSelectedProvince}>
-            <SelectTrigger className="w-48 bg-card/50">
-              <MapPin className="h-4 w-4 mr-2 text-muted-foreground" />
-              <SelectValue placeholder="Select Province" />
-            </SelectTrigger>
-            <SelectContent>
-              {PROVINCES.map((province) => (
-                <SelectItem key={province.value} value={province.value}>
-                  {province.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="flex items-center gap-3">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => fetchTrends(selectedProvince)}
+              disabled={isLoading}
+              className="gap-2"
+            >
+              <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+              Refresh
+            </Button>
+            <Select value={selectedProvince} onValueChange={setSelectedProvince}>
+              <SelectTrigger className="w-48 bg-card/50">
+                <MapPin className="h-4 w-4 mr-2 text-muted-foreground" />
+                <SelectValue placeholder="Select Province" />
+              </SelectTrigger>
+              <SelectContent>
+                {PROVINCES.map((province) => (
+                  <SelectItem key={province.value} value={province.value}>
+                    {province.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
+
+        {/* Loading State */}
+        {isLoading && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <Card className="bg-card/50 backdrop-blur-sm border-border/50">
+              <CardHeader>
+                <Skeleton className="h-6 w-48" />
+                <Skeleton className="h-4 w-64" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-80 w-full" />
+              </CardContent>
+            </Card>
+            <Card className="bg-card/50 backdrop-blur-sm border-border/50">
+              <CardHeader>
+                <Skeleton className="h-6 w-48" />
+                <Skeleton className="h-4 w-64" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-80 w-full" />
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Error State */}
+        {error && !isLoading && (
+          <Card className="bg-destructive/10 border-destructive/30 mb-8">
+            <CardContent className="p-4">
+              <p className="text-destructive text-sm">
+                Failed to load live trends. Showing cached data.
+              </p>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Industry Growth Chart */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
@@ -213,7 +305,7 @@ export default function Trends() {
                       labelLine={false}
                     >
                       {businessTypeData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
+                        <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
                       ))}
                     </Pie>
                     <Tooltip 
@@ -334,18 +426,14 @@ export default function Trends() {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="text-center p-4">
-                <div className="text-4xl font-bold text-primary mb-2">35%</div>
-                <p className="text-sm text-muted-foreground">of new businesses are purely online</p>
-              </div>
-              <div className="text-center p-4">
-                <div className="text-4xl font-bold text-primary mb-2">$15K</div>
-                <p className="text-sm text-muted-foreground">average startup cost in 2024</p>
-              </div>
-              <div className="text-center p-4">
-                <div className="text-4xl font-bold text-primary mb-2">78%</div>
-                <p className="text-sm text-muted-foreground">of successful startups use digital marketing</p>
-              </div>
+              {marketInsights.map((insight, index) => (
+                <div key={index} className="text-center p-4">
+                  <div className="text-4xl font-bold text-primary mb-2">{insight.label}</div>
+                  <p className="text-sm text-muted-foreground">
+                    {insight.value} {insight.description}
+                  </p>
+                </div>
+              ))}
             </div>
           </CardContent>
         </Card>
