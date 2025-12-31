@@ -68,14 +68,14 @@ export const SUBSCRIPTION_TIERS = {
 } as const;
 
 export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
-  const { user, session } = useAuth();
+  const { user } = useAuth();
   const [tier, setTier] = useState<SubscriptionTier>("free");
   const [subscribed, setSubscribed] = useState(false);
   const [subscriptionEnd, setSubscriptionEnd] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   const refreshSubscription = useCallback(async () => {
-    if (!session?.access_token) {
+    if (!user) {
       setTier("free");
       setSubscribed(false);
       setSubscriptionEnd(null);
@@ -84,9 +84,21 @@ export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
     }
 
     try {
+      // Get fresh session to avoid expired token issues
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData.session?.access_token;
+      
+      if (!accessToken) {
+        setTier("free");
+        setSubscribed(false);
+        setSubscriptionEnd(null);
+        setLoading(false);
+        return;
+      }
+
       const { data, error } = await supabase.functions.invoke("check-subscription", {
         headers: {
-          Authorization: `Bearer ${session.access_token}`,
+          Authorization: `Bearer ${accessToken}`,
         },
       });
 
@@ -102,17 +114,20 @@ export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       setLoading(false);
     }
-  }, [session?.access_token]);
+  }, [user]);
 
   const createCheckout = async (priceId: string) => {
-    if (!session?.access_token) {
+    const { data: sessionData } = await supabase.auth.getSession();
+    const accessToken = sessionData.session?.access_token;
+    
+    if (!accessToken) {
       throw new Error("You must be logged in to subscribe");
     }
 
     const { data, error } = await supabase.functions.invoke("create-checkout", {
       body: { priceId },
       headers: {
-        Authorization: `Bearer ${session.access_token}`,
+        Authorization: `Bearer ${accessToken}`,
       },
     });
 
@@ -123,13 +138,16 @@ export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const openCustomerPortal = async () => {
-    if (!session?.access_token) {
+    const { data: sessionData } = await supabase.auth.getSession();
+    const accessToken = sessionData.session?.access_token;
+    
+    if (!accessToken) {
       throw new Error("You must be logged in to manage subscription");
     }
 
     const { data, error } = await supabase.functions.invoke("customer-portal", {
       headers: {
-        Authorization: `Bearer ${session.access_token}`,
+        Authorization: `Bearer ${accessToken}`,
       },
     });
 
