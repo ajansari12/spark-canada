@@ -1,12 +1,26 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { X, Printer, Download, Loader2 } from "lucide-react";
+import { 
+  X, 
+  Printer, 
+  Download, 
+  Loader2, 
+  Maximize2, 
+  Minimize2, 
+  ZoomIn, 
+  ZoomOut,
+  ExternalLink,
+  Copy,
+  Check
+} from "lucide-react";
+import { toast } from "sonner";
 
 interface DocumentViewerProps {
   isOpen: boolean;
@@ -24,7 +38,25 @@ export const DocumentViewer = ({
   const [htmlContent, setHtmlContent] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isFullScreen, setIsFullScreen] = useState(false);
+  const [zoomLevel, setZoomLevel] = useState(100);
+  const [documentTitle, setDocumentTitle] = useState<string>("");
+  const [copied, setCopied] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
+
+  // Extract clean title from HTML content or filename
+  const extractTitle = useCallback((html: string, fileName: string): string => {
+    // Try to extract from h1 tag
+    const h1Match = html.match(/<h1[^>]*>([^<]+)<\/h1>/i);
+    if (h1Match && h1Match[1]) {
+      return h1Match[1].trim();
+    }
+    // Fallback: clean up filename
+    return fileName
+      .replace(/_Business_Plan\.html$/i, "")
+      .replace(/_/g, " ")
+      .replace(/\.html$/i, "");
+  }, []);
 
   useEffect(() => {
     const fetchHtmlContent = async () => {
@@ -43,6 +75,7 @@ export const DocumentViewer = ({
         }
         const html = await response.text();
         setHtmlContent(html);
+        setDocumentTitle(extractTitle(html, documentName));
       } catch (err) {
         console.error("Error fetching document:", err);
         setError("Failed to load document. Please try again.");
@@ -52,7 +85,25 @@ export const DocumentViewer = ({
     };
 
     fetchHtmlContent();
-  }, [documentUrl, isOpen]);
+  }, [documentUrl, isOpen, documentName, extractTitle]);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onClose();
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key === "p") {
+        e.preventDefault();
+        handlePrint();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose]);
 
   const handlePrint = () => {
     if (iframeRef.current?.contentWindow) {
@@ -76,35 +127,163 @@ export const DocumentViewer = ({
     URL.revokeObjectURL(url);
   };
 
+  const handleOpenInNewTab = () => {
+    if (documentUrl) {
+      window.open(documentUrl, "_blank");
+    }
+  };
+
+  const handleCopyLink = async () => {
+    if (documentUrl) {
+      await navigator.clipboard.writeText(documentUrl);
+      setCopied(true);
+      toast.success("Link copied to clipboard");
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  const handleZoomIn = () => setZoomLevel((prev) => Math.min(prev + 10, 150));
+  const handleZoomOut = () => setZoomLevel((prev) => Math.max(prev - 10, 70));
+  const handleZoomReset = () => setZoomLevel(100);
+
+  const toggleFullScreen = () => setIsFullScreen((prev) => !prev);
+
+  // Apply zoom to iframe content
+  useEffect(() => {
+    if (iframeRef.current?.contentDocument?.body) {
+      iframeRef.current.contentDocument.body.style.zoom = `${zoomLevel}%`;
+    }
+  }, [zoomLevel, htmlContent]);
+
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-5xl w-[95vw] h-[90vh] flex flex-col p-0 gap-0">
-        <DialogHeader className="flex flex-row items-center justify-between px-4 py-3 border-b border-border shrink-0">
-          <DialogTitle className="text-base font-semibold truncate pr-4">
-            {documentName}
-          </DialogTitle>
-          <div className="flex items-center gap-2">
+      <DialogContent 
+        className={`flex flex-col p-0 gap-0 ${
+          isFullScreen 
+            ? "max-w-[100vw] w-[100vw] h-[100vh] rounded-none" 
+            : "max-w-5xl w-[95vw] h-[90vh]"
+        }`}
+      >
+        <DialogHeader className="flex flex-row items-center justify-between px-4 py-3 border-b border-border shrink-0 bg-gradient-to-r from-background to-muted/30">
+          <div className="flex flex-col gap-0.5 min-w-0 flex-1">
+            <DialogTitle className="text-base font-semibold truncate pr-4">
+              {documentTitle || documentName}
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground">
+              Business Plan Document
+            </DialogDescription>
+          </div>
+          
+          <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+            {/* Zoom controls */}
+            <div className="hidden sm:flex items-center gap-1 mr-2 px-2 py-1 bg-muted/50 rounded-md">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleZoomOut}
+                disabled={zoomLevel <= 70}
+                className="h-7 w-7"
+              >
+                <ZoomOut className="w-3.5 h-3.5" />
+              </Button>
+              <button 
+                onClick={handleZoomReset}
+                className="text-xs font-medium min-w-[40px] text-center hover:text-primary transition-colors"
+              >
+                {zoomLevel}%
+              </button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleZoomIn}
+                disabled={zoomLevel >= 150}
+                className="h-7 w-7"
+              >
+                <ZoomIn className="w-3.5 h-3.5" />
+              </Button>
+            </div>
+
+            {/* Action buttons */}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleCopyLink}
+              disabled={!documentUrl}
+              className="h-8 w-8"
+              title="Copy link"
+            >
+              {copied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
+            </Button>
+            
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleOpenInNewTab}
+              disabled={!documentUrl}
+              className="h-8 w-8"
+              title="Open in new tab"
+            >
+              <ExternalLink className="w-4 h-4" />
+            </Button>
+
             <Button
               variant="outline"
               size="sm"
               onClick={handlePrint}
               disabled={!htmlContent}
-              className="gap-2"
+              className="gap-1.5 hidden sm:flex"
             >
               <Printer className="w-4 h-4" />
-              <span className="hidden sm:inline">Print / Save PDF</span>
+              <span>Print</span>
             </Button>
+            
             <Button
               variant="outline"
               size="sm"
               onClick={handleDownload}
               disabled={!htmlContent}
-              className="gap-2"
+              className="gap-1.5 hidden sm:flex"
             >
               <Download className="w-4 h-4" />
-              <span className="hidden sm:inline">Download</span>
+              <span>Download</span>
             </Button>
-            <Button variant="ghost" size="icon" onClick={onClose}>
+
+            {/* Mobile-only icon buttons */}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handlePrint}
+              disabled={!htmlContent}
+              className="h-8 w-8 sm:hidden"
+            >
+              <Printer className="w-4 h-4" />
+            </Button>
+            
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleDownload}
+              disabled={!htmlContent}
+              className="h-8 w-8 sm:hidden"
+            >
+              <Download className="w-4 h-4" />
+            </Button>
+
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleFullScreen}
+              className="h-8 w-8"
+              title={isFullScreen ? "Exit fullscreen" : "Fullscreen"}
+            >
+              {isFullScreen ? (
+                <Minimize2 className="w-4 h-4" />
+              ) : (
+                <Maximize2 className="w-4 h-4" />
+              )}
+            </Button>
+            
+            <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8">
               <X className="w-4 h-4" />
             </Button>
           </div>
@@ -135,9 +314,15 @@ export const DocumentViewer = ({
             <iframe
               ref={iframeRef}
               srcDoc={htmlContent}
-              title={documentName}
+              title={documentTitle || documentName}
               className="w-full h-full border-0 bg-white"
               sandbox="allow-same-origin allow-popups"
+              onLoad={() => {
+                // Apply zoom after iframe loads
+                if (iframeRef.current?.contentDocument?.body) {
+                  iframeRef.current.contentDocument.body.style.zoom = `${zoomLevel}%`;
+                }
+              }}
             />
           )}
         </div>
