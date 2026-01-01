@@ -58,6 +58,8 @@ serve(async (req) => {
 
     const aiPrompt = `Generate a professional executive summary for this business idea. Keep it to 2-3 paragraphs.
 
+IMPORTANT: Write in plain text only. Do NOT use any markdown formatting like **bold**, *italics*, ## headers, or bullet points. Just write natural flowing paragraphs.
+
 Business Name: ${idea.name}
 Description: ${idea.description}
 Industry: ${idea.industry || "General"}
@@ -66,7 +68,7 @@ Startup Cost: $${idea.startup_cost_min?.toLocaleString() || "N/A"} - $${idea.sta
 Monthly Revenue: $${idea.monthly_revenue_min?.toLocaleString() || "N/A"} - $${idea.monthly_revenue_max?.toLocaleString() || "N/A"}
 Viability Score: ${idea.viability_score || "N/A"}/100
 
-Write a compelling executive summary that a bank or investor would find professional.`;
+Write a compelling executive summary that a bank or investor would find professional. Use plain text only, no markdown.`;
 
     const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -90,7 +92,17 @@ Write a compelling executive summary that a bank or investor would find professi
     }
 
     const aiData = await aiResponse.json();
-    const executiveSummary = aiData.choices?.[0]?.message?.content || "Executive summary not available.";
+    let executiveSummary = aiData.choices?.[0]?.message?.content || "Executive summary not available.";
+    
+    // Clean up any markdown that might have slipped through
+    executiveSummary = executiveSummary
+      .replace(/\*\*([^*]+)\*\*/g, '$1')  // Remove **bold** markers
+      .replace(/\*([^*]+)\*/g, '$1')      // Remove *italic* markers
+      .replace(/^##\s*/gm, '')            // Remove ## headers
+      .replace(/^#\s*/gm, '')             // Remove # headers
+      .replace(/^-\s*/gm, '')             // Remove bullet points
+      .replace(/^\d+\.\s*/gm, '');        // Remove numbered lists
+    
     logStep("AI content generated");
 
     // Generate HTML content for PDF
