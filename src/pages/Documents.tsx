@@ -5,13 +5,13 @@ import { useDocuments } from "@/hooks/useDocuments";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AppHeader } from "@/components/layout/AppHeader";
+import { DocumentViewer } from "@/components/documents/DocumentViewer";
 import {
   FileText,
-  Download,
   Trash2,
   Sparkles,
   Calendar,
-  ExternalLink,
+  Eye,
   Loader2,
 } from "lucide-react";
 import {
@@ -47,6 +47,7 @@ const Documents = () => {
   const [documents, setDocuments] = useState<Document[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [viewingDocument, setViewingDocument] = useState<Document | null>(null);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -75,10 +76,8 @@ const Documents = () => {
     setDeletingId(null);
   };
 
-  const handleDownload = (url: string | null) => {
-    if (url) {
-      window.open(url, "_blank");
-    }
+  const handleView = (doc: Document) => {
+    setViewingDocument(doc);
   };
 
   if (authLoading || isLoading) {
@@ -176,25 +175,16 @@ const Documents = () => {
                     <span>{format(new Date(doc.created_at), "MMM d, yyyy")}</span>
                   </div>
 
-                  <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2">
                     <Button
                       variant="outline"
                       size="sm"
                       className="flex-1 gap-2"
-                      onClick={() => handleDownload(doc.file_url)}
+                      onClick={() => handleView(doc)}
                       disabled={!doc.file_url || doc.status !== "completed"}
                     >
-                      {doc.file_url ? (
-                        <>
-                          <ExternalLink className="w-4 h-4" />
-                          View
-                        </>
-                      ) : (
-                        <>
-                          <Download className="w-4 h-4" />
-                          Download
-                        </>
-                      )}
+                      <Eye className="w-4 h-4" />
+                      View
                     </Button>
 
                     <AlertDialog>
@@ -238,6 +228,14 @@ const Documents = () => {
           </div>
         )}
       </main>
+
+      {/* Document Viewer Modal */}
+      <DocumentViewer
+        isOpen={!!viewingDocument}
+        onClose={() => setViewingDocument(null)}
+        documentUrl={viewingDocument?.file_url ?? null}
+        documentName={viewingDocument?.file_name ?? ""}
+      />
     </div>
   );
 };
