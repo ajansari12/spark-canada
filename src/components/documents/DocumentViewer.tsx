@@ -44,6 +44,15 @@ export const DocumentViewer = ({
   const [copied, setCopied] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
+  // Clean markdown syntax in HTML content
+  const cleanMarkdownInHtml = useCallback((html: string): string => {
+    return html
+      .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')  // **bold** to <strong>
+      .replace(/\*([^*]+)\*/g, '<em>$1</em>')              // *italic* to <em>
+      .replace(/^##\s*/gm, '')                              // Strip ## headers
+      .replace(/^#\s*/gm, '');                              // Strip # headers
+  }, []);
+
   // Extract clean title from HTML content or filename
   const extractTitle = useCallback((html: string, fileName: string): string => {
     // Try to extract from h1 tag
@@ -74,8 +83,9 @@ export const DocumentViewer = ({
           throw new Error("Failed to fetch document");
         }
         const html = await response.text();
-        setHtmlContent(html);
-        setDocumentTitle(extractTitle(html, documentName));
+        const cleanedHtml = cleanMarkdownInHtml(html);
+        setHtmlContent(cleanedHtml);
+        setDocumentTitle(extractTitle(cleanedHtml, documentName));
       } catch (err) {
         console.error("Error fetching document:", err);
         setError("Failed to load document. Please try again.");
@@ -85,7 +95,7 @@ export const DocumentViewer = ({
     };
 
     fetchHtmlContent();
-  }, [documentUrl, isOpen, documentName, extractTitle]);
+  }, [documentUrl, isOpen, documentName, extractTitle, cleanMarkdownInHtml]);
 
   // Keyboard shortcuts
   useEffect(() => {
